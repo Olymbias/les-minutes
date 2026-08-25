@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registre de délibérations</title>
+<meta name="description" content="Combien de temps te faudrait-il pour amasser la fortune d'un milliardaire ?">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1E3A2A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --parchemin:#F2D6B3;
+  --parchemin-clair:#F9ECD8;
+  --encre:#2A2118;
+  --vert:#285C36;
+  --vert-sombre:#1E3A2A;
+  --or:#CAA35A;
+  --rouge:#A63126;
+  --bleu:#454F8C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'EB Garamond',Georgia,serif;
+  font-size:18px;
+  line-height:1.55;
+  background:var(--parchemin);
+  color:var(--encre);
+  padding:0 0 56px;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(42,33,24,.055) 27px 28px),
+    radial-gradient(ellipse at 20% 10%, rgba(202,163,90,.16), transparent 60%);
+}
+.feuille{max-width:560px;margin:0 auto;padding:0 18px}
+
+/* --- En-tête --- */
+header{
+  padding:26px 20px 20px;margin-top:22px;
+  background:var(--parchemin-clair);
+  border:2px solid var(--vert-sombre);
+  box-shadow:0 0 0 4px var(--parchemin-clair), 0 0 0 5px rgba(40,92,54,.35);
+  position:relative;
+}
+.langue{
+  position:absolute;top:10px;right:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  background:none;border:1px solid var(--vert-sombre);color:var(--vert-sombre);
+  padding:4px 9px;cursor:pointer;
+}
+.langue:hover{background:var(--vert-sombre);color:var(--parchemin-clair)}
+.article{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--vert);
+}
+h1{
+  font-family:'Cinzel',serif;font-weight:700;
+  font-size:clamp(25px,7vw,36px);line-height:1.1;
+  color:var(--vert-sombre);margin:9px 0 4px;
+}
+.soustitre{font-style:italic;color:#5a4a35;font-size:16px;max-width:42ch}
+
+/* --- Formulaire --- */
+.saisie{margin-top:20px}
+label{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--vert);margin-bottom:5px;
+}
+.ligne{display:flex;gap:9px}
+input,select{
+  font-family:'EB Garamond',serif;font-size:17px;color:var(--encre);
+  background:var(--parchemin-clair);border:1.5px solid var(--vert-sombre);
+  padding:11px 10px;width:100%;border-radius:0;
+}
+.ligne input{flex:1.15}
+.ligne select{flex:1}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.champ+.champ{margin-top:14px}
+
+/* --- Résultats --- */
+.verdict{display:none;margin-top:22px}
+.verdict.ouvert{display:block}
+section{
+  background:var(--parchemin-clair);
+  border:1.5px solid var(--vert-sombre);
+  padding:16px 15px;margin-bottom:15px;
+}
+h2{
+  font-family:'Cinzel',serif;font-weight:500;font-size:12px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--rouge);
+  padding-bottom:7px;margin-bottom:11px;border-bottom:1px solid var(--or);
+}
+.constat{font-size:19px;margin-bottom:9px}
+.constat:last-child{margin-bottom:0}
+.chiffre{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--rouge)}
+.aparte{
+  margin-top:12px;padding:10px 12px;font-style:italic;font-size:16px;
+  background:rgba(69,79,140,.07);border-left:3px solid var(--bleu);
+}
+
+/* --- Échelle --- */
+.echelle{list-style:none}
+.echelle li{
+  display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  padding:10px 0;border-bottom:1px dotted rgba(42,33,24,.3);
+}
+.echelle li:last-child{border-bottom:none}
+.echelle .cadence{font-variant:small-caps;font-size:17px}
+.echelle .duree{
+  font-family:'IBM Plex Mono',monospace;font-size:14px;
+  text-align:right;white-space:nowrap;
+}
+.echelle li.ultime{
+  background:rgba(166,49,38,.07);border:1.5px solid var(--rouge);
+  padding:12px 11px;margin-top:9px;border-bottom:none;
+}
+.echelle li.ultime .duree{color:var(--rouge);font-weight:600}
+
+/* --- Compteur --- */
+.greffe{
+  font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;
+  color:var(--vert);font-variant-numeric:tabular-nums;margin:6px 0 3px;
+  word-break:break-word;
+}
+.glose{font-size:14.5px;font-style:italic;color:#5a4a35}
+
+/* --- Actions --- */
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+button.sceau{
+  font-family:'Cinzel',serif;font-size:12px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;background:var(--rouge);color:var(--parchemin);
+  border:2px solid var(--or);padding:11px 18px;cursor:pointer;
+}
+button.sceau:hover{background:#8d2820}
+button.sceau.sourdine{background:transparent;color:var(--vert-sombre);border-color:var(--vert-sombre)}
+button.sceau.sourdine:hover{background:var(--vert-sombre);color:var(--parchemin-clair)}
+
+footer{
+  margin-top:22px;font-family:'IBM Plex Mono',monospace;
+  font-size:11px;line-height:1.85;color:#6b5a42;
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="feuille">
+
+<header>
+  <button class="langue" id="langue" type="button">EN</button>
+  <p class="article" id="eyebrow"></p>
+  <h1 id="titre"></h1>
+  <p class="soustitre" id="soustitre"></p>
+
+  <div class="saisie">
+    <div class="champ">
+      <label for="salaire" id="lblSalaire"></label>
+      <div class="ligne">
+        <input type="number" id="salaire" inputmode="decimal" min="1" step="50" value="2000">
+        <select id="periode">
+          <option value="mois" selected></option>
+          <option value="an"></option>
+          <option value="heure"></option>
+        </select>
+      </div>
+    </div>
+    <div class="champ">
+      <label for="sujet" id="lblSujet"></label>
+      <select id="sujet"></select>
+    </div>
+  </div>
+</header>
+
+<div class="verdict" id="verdict">
+
+  <section>
+    <h2 id="h2Constat"></h2>
+    <p class="constat" id="constatAnnees"></p>
+    <p class="constat" id="constatVies"></p>
+    <div class="aparte" id="ancrage"></div>
+  </section>
+
+  <section>
+    <h2 id="h2Echelle"></h2>
+    <ul class="echelle" id="echelle"></ul>
+  </section>
+
+  <section>
+    <h2 id="h2Greffe"></h2>
+    <p id="greffeIntro"></p>
+    <p class="greffe" id="greffe">0 €</p>
+    <p class="glose" id="greffeGlose"></p>
+  </section>
+
+  <section>
+    <h2 id="h2Ancien"></h2>
+    <p id="ancienTexte"></p>
+    <div class="aparte" id="ancienAparte"></div>
+  </section>
+
+  <div class="actions">
+    <button class="sceau" id="copier" type="button"></button>
+  </div>
+
+</div>
+
+<footer id="pied"></footer>
+</div>
+
+<script>
+/* ============================================================
+   1. LES DONNÉES
+   Fortunes : Forbes. Chaque chiffre porte sa date de relevé,
+   à mettre à jour à la main (voir README).
+   ============================================================ */
+const SUJETS = [
+  { id:"musk",    nom:"Elon Musk",       usd:830e9, naissance:1971, releve:"Forbes 2026" },
+  { id:"page",    nom:"Larry Page",      usd:257e9, naissance:1973, releve:"Forbes 03/2026" },
+  { id:"bezos",   nom:"Jeff Bezos",      usd:290e9, naissance:1964, releve:"Forbes 2026" },
+  { id:"arnault", nom:"Bernard Arnault", usd:160e9, naissance:1949, releve:"Forbes 2026" },
+  { id:"bollore", nom:"Vincent Bolloré", usd:10.3e9, naissance:1952, releve:"Forbes 04/2025" },
+];
+const TAUX_USD_EUR = 0.92;
+const CARRIERE = 43;          // années d'une vie de travail
+const HEURES_MOIS = 151.67;   // temps plein 35 h
+
+/* ============================================================
+   2. LES TEXTES — un objet par langue.
+   Toute phrase affichée vit ici, jamais dans le HTML.
+   ============================================================ */
+const TEXTES = {
+  fr: {
+    htmlLang:"fr", autreLangue:"EN", titre:"Registre de délibérations",
+    eyebrow:"Séance publique · Article premier",
+    soustitre:"Doléances chiffrées à l'usage de qui travaille pour vivre.",
+    lblSalaire:"Ce que tu gagnes", lblSujet:"Celui qu'on examine",
+    perMois:"€ par mois", perAn:"€ par an", perHeure:"€ de l'heure",
+    h2Constat:"Constat d'huissier", h2Echelle:"Échelle des cadences",
+    h2Greffe:"Le greffe enregistre", h2Ancien:"Comparution de l'Ancien Régime",
+    annees:(v)=>`Bonne nouvelle : plus que <span class="chiffre">${v}</span> à mettre de côté. Sans rien dépenser, évidemment.`,
+    vies:(v)=>`Soit <span class="chiffre">${v}</span> vies entières de travail. Prévois du renfort.`,
+    ancrage:(q,a)=>`Pour y être arrivé aujourd'hui, il aurait fallu commencer ${q}. ${a}`,
+    cadences:["…chaque mois","…chaque semaine","…chaque jour","…chaque heure","…chaque minute","…chaque seconde"],
+    greffeIntro:"Depuis que ce registre est ouvert, il a gagné :",
+    greffeGlose:"Rythme moyen calculé sur l'ensemble de sa vie. Le rythme réel de ces dernières années est nettement plus rapide.",
+    ancienTexte:(v)=>`En 1789, le centile le plus riche détenait 60 % du patrimoine du royaume — motif jugé suffisant pour convoquer les États généraux. Sa fortune à lui équivaut aujourd'hui à <span class="chiffre">${v}</span> fois ce que tu gagneras dans toute ta carrière.`,
+    ancienAparte:"Le tiers état représentait 98 % de la population et payait l'essentiel de l'impôt. Toute ressemblance, etc.",
+    copier:"Copier le procès-verbal", copie:"Procès-verbal copié",
+    pied:(d)=>`Fortunes : Forbes, converties en euros (1 $ ≈ ${d} €).<br>Carrière de référence : ${CARRIERE} ans. Données 1789 : Piketty, via CADTM.<br>Aucun montant saisi ne quitte cet appareil.`,
+    ansPluriel:"ans", anMillions:"d'années", jours:"jours", heures:"heures", minutes:"minutes", secondes:"secondes",
+    milliards:"milliards", millions:"millions",
+    milliard:"milliard", million:"million",
+    avantJC:(n)=>`en l'an ${n} avant notre ère`, apresJC:(n)=>`en ${n}`,
+    ancres:[
+      {min:66e6,  txt:"Les dinosaures étaient encore là. Ils n'ont rien mis de côté non plus."},
+      {min:3.2e6, txt:"Lucy n'était pas née. Elle non plus n'avait pas de plan épargne."},
+      {min:300000,txt:"Avant les premiers Homo sapiens. Un léger contretemps."},
+      {min:40000, txt:"Avant la grotte Chauvet. On peignait, on n'épargnait pas."},
+      {min:12000, txt:"Avant l'agriculture. Difficile d'ouvrir un compte."},
+      {min:5000,  txt:"Avant l'écriture — donc avant la comptabilité. Ironique."},
+      {min:2000,  txt:"En plein Empire romain. Tu aurais eu le temps de voir sa chute."},
+      {min:1000,  txt:"À l'époque des Vikings. Les intérêts composés n'existaient pas."},
+      {min:500,   txt:"Sous François Iᵉʳ. Deux siècles avant 1789, tu épargnais déjà."},
+      {min:200,   txt:"Avant la Révolution industrielle. Tu aurais tout vu venir."},
+      {min:100,   txt:"Avant la Seconde Guerre mondiale. Rien que ça."},
+      {min:0,     txt:"C'est presque à portée. Presque."},
+    ],
+  },
+  en: {
+    htmlLang:"en", autreLangue:"FR", titre:"The Minutes",
+    eyebrow:"Public session · Article the first",
+    soustitre:"Grievances, itemised, for those who work for a living.",
+    lblSalaire:"What you earn", lblSujet:"The party under review",
+    perMois:"€ per month", perAn:"€ per year", perHeure:"€ per hour",
+    h2Constat:"Statement of fact", h2Echelle:"Schedule of rates",
+    h2Greffe:"The clerk records", h2Ancien:"The Old Regime is called",
+    annees:(v)=>`Good news: only <span class="chiffre">${v}</span> left to save. Spending nothing, naturally.`,
+    vies:(v)=>`That is <span class="chiffre">${v}</span> full working lives. Bring friends.`,
+    ancrage:(q,a)=>`To have got there by today, you'd have needed to start ${q}. ${a}`,
+    cadences:["…every month","…every week","…every day","…every hour","…every minute","…every second"],
+    greffeIntro:"Since these minutes were opened, he has earned:",
+    greffeGlose:"Average rate across his entire life. The actual rate in recent years is considerably faster.",
+    ancienTexte:(v)=>`In 1789, the richest one percent held 60% of the kingdom's wealth — grounds enough to summon the Estates General. His fortune today equals <span class="chiffre">${v}</span> times everything you will earn in your whole career.`,
+    ancienAparte:"The third estate was 98% of the population and paid most of the tax. Any resemblance, etc.",
+    copier:"Copy the minutes", copie:"Minutes copied",
+    pied:(d)=>`Fortunes: Forbes, converted to euros (US$1 ≈ €${d}).<br>Reference career: ${CARRIERE} years. 1789 figures: Piketty, via CADTM.<br>Nothing you type leaves this device.`,
+    ansPluriel:"years", anMillions:"years", jours:"days", heures:"hours", minutes:"minutes", secondes:"seconds",
+    milliards:"billion", millions:"million",
+    milliard:"billion", million:"million",
+    avantJC:(n)=>`in the year ${n} BCE`, apresJC:(n)=>`in ${n}`,
+    ancres:[
+      {min:66e6,  txt:"The dinosaurs were still around. They saved nothing either."},
+      {min:3.2e6, txt:"Lucy wasn't born yet. No pension plan on her side either."},
+      {min:300000,txt:"Before the first Homo sapiens. A slight scheduling problem."},
+      {min:40000, txt:"Before the Chauvet cave paintings. We painted; we did not save."},
+      {min:12000, txt:"Before agriculture. Hard to open an account."},
+      {min:5000,  txt:"Before writing — so before bookkeeping. Fitting."},
+      {min:2000,  txt:"Deep in the Roman Empire. You'd have watched it fall."},
+      {min:1000,  txt:"In the age of the Vikings. Compound interest wasn't a thing."},
+      {min:500,   txt:"Under Henry VIII. You'd have been saving two centuries before 1789."},
+      {min:200,   txt:"Before the Industrial Revolution. You'd have seen it all coming."},
+      {min:100,   txt:"Before the Second World War. That recent."},
+      {min:0,     txt:"Almost within reach. Almost."},
+    ],
+  },
+};
+
+/* ============================================================
+   3. OUTILS
+   ============================================================ */
+let langue = "fr";
+const T = () => TEXTES[langue];
+const $ = (id) => document.getElementById(id);
+const ANNEE = new Date().getFullYear();
+
+function nf(max){ return new Intl.NumberFormat(langue === "fr" ? "fr-FR" : "en-GB", {maximumFractionDigits:max}); }
+
+function grandNombre(n){
+  const t = T();
+  // accord : « 1 million » mais « 2 millions »
+  const echelle = (valeur, pluriel, singulier) => {
+    const texte = nf(1).format(valeur);
+    return texte + " " + (Math.abs(valeur) < 2 ? singulier : pluriel);
+  };
+  if (n >= 1e9) return echelle(n/1e9, t.milliards, t.milliard);
+  if (n >= 1e6) return echelle(n/1e6, t.millions, t.million);
+  return nf(0).format(Math.round(n));
+}
+
+function duree(secondes){
+  const t = T();
+  const min = secondes/60, h = min/60, j = h/24, ans = j/365.25;
+  if (ans >= 1e6) return grandNombre(ans) + " " + t.anMillions;
+  if (ans >= 2)   return grandNombre(ans) + " " + t.ansPluriel;
+  if (j >= 2)     return nf(0).format(Math.round(j)) + " " + t.jours;
+  if (h >= 2)     return nf(0).format(Math.round(h)) + " " + t.heures;
+  if (min >= 2)   return nf(0).format(Math.round(min)) + " " + t.minutes;
+  return nf(0).format(Math.round(secondes)) + " " + t.secondes;
+}
+
+function ancrage(ans){
+  const t = T();
+  const debut = ANNEE - ans;
+  const quand = debut < 0 ? t.avantJC(grandNombre(Math.abs(debut))) : t.apresJC(Math.round(debut));
+  const a = t.ancres.find(x => ans >= x.min);
+  return t.ancrage(quand, a ? a.txt : "");
+}
+
+/* ============================================================
+   4. AFFICHAGE
+   ============================================================ */
+let chrono = null;
+
+function habiller(){
+  const t = T();
+  document.documentElement.lang = t.htmlLang;
+  document.title = t.titre;
+  $("langue").textContent = t.autreLangue;
+  $("eyebrow").textContent = t.eyebrow;
+  $("titre").textContent = t.titre;
+  $("soustitre").textContent = t.soustitre;
+  $("lblSalaire").textContent = t.lblSalaire;
+  $("lblSujet").textContent = t.lblSujet;
+  $("h2Constat").textContent = t.h2Constat;
+  $("h2Echelle").textContent = t.h2Echelle;
+  $("h2Greffe").textContent = t.h2Greffe;
+  $("h2Ancien").textContent = t.h2Ancien;
+  $("greffeIntro").textContent = t.greffeIntro;
+  $("greffeGlose").textContent = t.greffeGlose;
+  $("ancienAparte").textContent = t.ancienAparte;
+  $("copier").textContent = t.copier;
+  $("pied").innerHTML = t.pied(TAUX_USD_EUR);
+
+  const p = $("periode");
+  p.options[0].textContent = t.perMois;
+  p.options[1].textContent = t.perAn;
+  p.options[2].textContent = t.perHeure;
+
+  const s = $("sujet"), choix = s.value;
+  s.innerHTML = "";
+  SUJETS.forEach(x => {
+    const o = document.createElement("option");
+    o.value = x.id;
+    o.textContent = `${x.nom} — ${nf(0).format(Math.round(x.usd*TAUX_USD_EUR/1e9))} ${t.milliards} €`;
+    s.appendChild(o);
+  });
+  s.value = choix || "bezos";
+}
+
+function delibérer(){
+  const t = T();
+  const montant = parseFloat($("salaire").value);
+  if (!montant || montant <= 0){ $("verdict").classList.remove("ouvert"); return; }
+
+  let parMois = montant;
+  if ($("periode").value === "an") parMois = montant/12;
+  if ($("periode").value === "heure") parMois = montant * HEURES_MOIS;
+
+  const sujet = SUJETS.find(x => x.id === $("sujet").value);
+  const fortune = sujet.usd * TAUX_USD_EUR;
+  const nb = fortune / parMois;          // ratio brut, sans unité
+  const ansPile = nb / 12;
+
+  $("constatAnnees").innerHTML = t.annees(duree(ansPile * 365.25 * 86400));
+  $("constatVies").innerHTML = t.vies(grandNombre(ansPile / CARRIERE));
+  $("ancrage").textContent = ancrage(ansPile);
+
+  const S_MOIS = 365.25*86400/12;
+  const cadences = [
+    nb * S_MOIS, nb * 7*86400, nb * 86400,
+    nb * 3600,   nb * 60,      nb,
+  ];
+  const ul = $("echelle");
+  ul.innerHTML = "";
+  cadences.forEach((sec, i) => {
+    const li = document.createElement("li");
+    if (i === cadences.length - 1) li.className = "ultime";
+    li.innerHTML = `<span class="cadence">${t.cadences[i]}</span><span class="duree">${duree(sec)}</span>`;
+    ul.appendChild(li);
+  });
+
+  const salaireCarriere = parMois * 12 * CARRIERE;
+  $("ancienTexte").innerHTML = t.ancienTexte(grandNombre(fortune / salaireCarriere));
+
+  // Compteur en direct : rythme moyen sur l'ensemble de sa vie
+  const parSeconde = fortune / ((ANNEE - sujet.naissance) * 365.25 * 86400);
+  if (chrono) clearInterval(chrono);
+  const t0 = Date.now();
+  const tic = () => {
+    $("greffe").textContent = nf(0).format(Math.round((Date.now()-t0)/1000 * parSeconde)) + " €";
+  };
+  tic();
+  chrono = setInterval(tic, 250);
+
+  $("verdict").classList.add("ouvert");
+}
+
+/* ============================================================
+   5. BRANCHEMENTS
+   ============================================================ */
+$("langue").addEventListener("click", () => {
+  langue = (langue === "fr") ? "en" : "fr";
+  habiller();
+  delibérer();
+});
+
+["salaire","periode","sujet"].forEach(id => $(id).addEventListener("input", delibérer));
+
+$("copier").addEventListener("click", async () => {
+  const t = T();
+  const lignes = [...$("echelle").querySelectorAll("li")]
+    .map(li => li.querySelector(".cadence").textContent + " " + li.querySelector(".duree").textContent);
+  const texte = `${t.titre}\n${$("sujet").selectedOptions[0].textContent}\n\n` +
+                lignes.join("\n") + `\n\n${$("ancrage").textContent}`;
+  try {
+    await navigator.clipboard.writeText(texte);
+    $("copier").textContent = t.copie;
+    setTimeout(() => { $("copier").textContent = t.copier; }, 2000);
+  } catch (e) {
+    $("copier").textContent = "—";
+    setTimeout(() => { $("copier").textContent = t.copier; }, 2000);
+  }
+});
+
+habiller();
+$("sujet").value = "bezos";
+delibérer();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
