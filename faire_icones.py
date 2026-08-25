@@ -1,50 +1,37 @@
 from PIL import Image, ImageDraw
 
-PARCHEMIN = (242, 214, 179)
-VERT      = (30, 58, 42)
-OR        = (202, 163, 90)
-ROUGE     = (166, 49, 38)
+VERT   = (40, 92, 54)     # #285C36
+CREME  = (244, 239, 227)  # #F4EFE3
+OR     = (217, 186, 95)   # #D9BA5F
+ROUGE  = (191, 79, 69)    # #BF4F45
 
 
 def dessiner(taille, maskable=False):
-    """Icône : un registre ouvert, trait doré, sceau rouge."""
+    """Icône façon affiche : des lignes de procès-verbal, un bloc rouge."""
     S = 1024
-    img = Image.new("RGB", (S, S), VERT if not maskable else VERT)
+    img = Image.new("RGB", (S, S), VERT)
     d = ImageDraw.Draw(img)
 
     # Zone sûre réduite pour la version maskable (Android rogne les bords)
-    m = S * 0.26 if maskable else S * 0.15
+    m = S * 0.24 if maskable else S * 0.16
 
-    # Page de gauche et de droite (le registre ouvert)
-    haut, bas = m, S - m
-    milieu = S / 2
-    ecart = S * 0.012
-
-    d.rectangle([m, haut, milieu - ecart, bas], fill=PARCHEMIN)
-    d.rectangle([milieu + ecart, haut, S - m, bas], fill=PARCHEMIN)
-
-    # Reliure centrale
-    d.rectangle([milieu - ecart, haut, milieu + ecart, bas], fill=OR)
-
-    # Lignes d'écriture, plus courtes en descendant (comme une liste)
-    trait = max(2, int(S * 0.011))
+    # Lignes du procès-verbal, largeurs variées, bien épaisses
     n = 5
-    zone_h = (bas - haut) * 0.62
-    depart = haut + (bas - haut) * 0.19
+    zone_h = S - 2 * m
+    ep = zone_h * 0.10           # épaisseur d'une ligne
     pas = zone_h / n
+    largeurs = [1.0, 0.72, 0.88, 0.55, 0.80]
     for i in range(n):
-        y = depart + i * pas
-        for gauche, droite in ((m, milieu - ecart), (milieu + ecart, S - m)):
-            marge = (droite - gauche) * 0.14
-            fin = droite - marge - (droite - gauche) * 0.10 * (i % 3)
-            d.line([gauche + marge, y, fin, y], fill=VERT, width=trait)
+        y = m + i * pas + (pas - ep) / 2
+        w = (S - 2 * m) * largeurs[i]
+        couleur = OR if i == 0 else CREME
+        d.rectangle([m, y, m + w, y + ep], fill=couleur)
 
-    # Sceau de cire, en bas à droite
-    r = S * 0.085
-    cx, cy = S - m - r * 1.1, bas - r * 1.1
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ROUGE)
-    d.ellipse([cx - r * 0.62, cy - r * 0.62, cx + r * 0.62, cy + r * 0.62],
-              outline=OR, width=max(2, int(S * 0.007)))
+    # Le point final : un bloc rouge, en bas à droite
+    c = ep * 1.15
+    d.rectangle([S - m - c, m + (n - 1) * pas + (pas - ep) / 2 - (c - ep) / 2,
+                 S - m, m + (n - 1) * pas + (pas - ep) / 2 + ep + (c - ep) / 2],
+                fill=ROUGE)
 
     return img.resize((taille, taille), Image.LANCZOS)
 

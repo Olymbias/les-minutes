@@ -1,7 +1,7 @@
 /* Service worker — permet à l'app de fonctionner sans connexion.
    Quand tu modifies index.html, change le numéro de VERSION ci-dessous :
    c'est ce qui force le téléphone à recharger la nouvelle version. */
-const VERSION = "registre-v1";
+const VERSION = "minutes-v1";
 
 const FICHIERS = [
   "./",
